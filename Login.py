@@ -1,27 +1,30 @@
 from PyQt5 import uic, QtWidgets
 import sqlite3
 import re
+from time import sleep
 
 
 def chama_logout_window():
     login_window.label_4.setText("")
-    username = login_window.lineEdit.text()
+    name = login_window.lineEdit.text()
     password = login_window.lineEdit_2.text()
-    database = sqlite3.connect('database_register.db')
+    #login = login_window.lineEdit.text()
+    database = sqlite3.connect('database_register_sys.db')
     cursor = database.cursor()
+
     try:
-        cursor.execute(
-            "SELECT password FROM register WHERE login ='{}'".format(username))
+        cursor.execute(f"SELECT password FROM register WHERE login ='{name}'")
         password_bd = cursor.fetchall()
         database.close()
     except:
-        print("erro ao validar login")
+        ValueError("Validate Error")
 
     if password == password_bd[0][0]:
         login_window.close()
         logout_window.show()
+
     else:
-        login_window.label_4.setText("Dados de login incorretos!")
+        login_window.label_4.setText("Login/password incorrect!")
 
 
 def logout():
@@ -34,13 +37,13 @@ def open_register_window():
 
 
 def register():
-    username = register_window.lineEdit.text()
+    name = register_window.lineEdit.text()
     email = register_window.lineEdit_5.text()
     login = register_window.lineEdit_2.text()
     password = register_window.lineEdit_3.text()
     confirm_password = register_window.lineEdit_4.text()
 
-    if len(password) < 6 and len(password) > 12:
+    if len(password) < 6 or len(password) > 12:
         register_window.label_2.setText(
             "Password must contain at least 6 characters and maximum 12 characters")
     elif re.search('[0-9]', password) is None:
@@ -55,12 +58,12 @@ def register():
     else:
         if password == confirm_password:
             try:
-                database = sqlite3.connect('database_register.db')
+                database = sqlite3.connect('database_register_sys.db')
                 cursor = database.cursor()
                 cursor.execute(
-                    "CREATE TABLE IF NOT EXISTS register (username text,login text,password text)")
+                    "CREATE TABLE IF NOT EXISTS register (name text,email text,login text,password text)")
                 cursor.execute("INSERT INTO register VALUES ('" +
-                               username+"','"+email+"''"+login+"','"+password+"')")
+                               name+"','"+email+"','"+login+"','"+password+"')")
 
                 database.commit()
                 database.close()
@@ -69,7 +72,7 @@ def register():
             except sqlite3.Error as errors:
                 print("insert error: ", errors)
         else:
-            register_window.label_2.setText(" Passwords do not match!")
+            register_window.label_2.setText("Passwords do not match!")
 
 
 app = QtWidgets.QApplication([])
